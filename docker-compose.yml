@@ -1,0 +1,31 @@
+version: "3.3"
+services:
+    postgres:
+        container_name: swm-postgres
+        restart: always
+        image: postgres  
+        networks:
+            - swmnetwork        
+        ports:  
+            - "5432:5432"
+        volumes:
+            - ./volumes/postgres:/var/lib/postgresql/data
+        environment: 
+            POSTGRES_PASSWORD: Postgres2021Giovani!   
+        
+    rabbit:
+        container_name: swm-rabbit
+        restart: always
+        image: rabbitmq:3-management
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        volumes:
+            - ./volumes/rabbit:/data
+        networks:
+            - swmnetwork
+
+networks: 
+    swmnetwork:
+        driver: bridge
+
