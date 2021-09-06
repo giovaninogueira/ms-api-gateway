@@ -1,5 +1,5 @@
 import { RabbitMQ } from "./rabbit-mq/rabbit-mq.provider";
 
-const messagerBroker = new RabbitMQ();
+const messagerBrokerAccess = new RabbitMQ();
 
-export { messagerBroker };
+export { messagerBrokerAccess };

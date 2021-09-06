@@ -3,6 +3,11 @@ export interface IMessagerAccess {
     message: any;
 }
 
+export interface IResponseAccess {
+    code: number;
+    response: any;
+}
+
 export interface IMessagerBrokerAccess {
     /**
      * Connect with messager broker
@@ -21,4 +26,10 @@ export interface IMessagerBrokerAccess {
      * @param message 
      */
     sendPubSub(message: IMessagerAccess): Promise<any>;
+
+    /**
+     * Send RPC
+     * @param message 
+     */
+    sendRPC(message: IMessagerAccess): Promise<IResponseAccess>;
 }

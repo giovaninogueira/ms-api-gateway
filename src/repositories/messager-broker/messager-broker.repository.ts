@@ -12,11 +12,7 @@ export class MessagerBoker {
      * @param message 
      */
     async sendRPC(message: IMessage): Promise<IMessageResponse> {
-        await this.messagerBroker.sendPubSub(message);
-        return {
-            code: 400,
-            response: ''
-        }
+        return await this.messagerBroker.sendRPC(message);
     }
 
     /**
