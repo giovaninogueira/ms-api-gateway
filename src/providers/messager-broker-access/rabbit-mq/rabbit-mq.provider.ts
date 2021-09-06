@@ -87,7 +87,9 @@ export class RabbitMQ implements IMessagerBrokerAccess {
                 conn.close();
                 resolve({
                     code: 408,
-                    response: 'Timeout'
+                    response: {
+                        message: 'Timeout'
+                    }
                 });
             }, timeout);
             // before X seconds
