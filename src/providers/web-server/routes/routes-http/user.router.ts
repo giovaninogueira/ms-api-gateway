@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { sendCreateUserController } from "../../../../app/send-create-user";
-import { IRouterHttp } from "../irouter-http.interface";
+import { IRouterHttp } from "../routes";
 
 export class UserRouter implements IRouterHttp {
     /**

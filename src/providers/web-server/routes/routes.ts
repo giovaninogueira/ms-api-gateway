@@ -1,6 +1,9 @@
 import express from "express";
-import { IRouterHttp } from "./irouter-http.interface";
 import { UserRouter } from "./routes-http/user.router";
+
+export interface IRouterHttp {
+    handle(router: express.Router): void
+}
 
 const router = express.Router();
 
