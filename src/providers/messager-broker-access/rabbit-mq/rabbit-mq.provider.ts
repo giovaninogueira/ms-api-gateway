@@ -55,8 +55,9 @@ export class RabbitMQ implements IMessagerBrokerAccess {
         return new Promise(async (resolve, reject) => {
 
             // uuidv4
+            let isRespond = false;
             const corr = uuidv4();
-            
+
             const conn = await amqp.connect(this.url);
             const ch = await conn.createChannel();
             await ch.assertQueue(message.queue, { durable: true })
@@ -73,10 +74,12 @@ export class RabbitMQ implements IMessagerBrokerAccess {
             // listen responde of queue
             ch.consume(q.queue, (msg: any) => {
                 if (msg.properties.correlationId === corr) {
-                    resolve(msg.content.toString());
+                    const messageResponse = this.messageConvert(msg);
                     setTimeout(function () {
                         conn.close();
                     }, 500);
+                    isRespond = true;
+                    return resolve(messageResponse);
                 }
             }, {
                 noAck: true
@@ -84,15 +87,42 @@ export class RabbitMQ implements IMessagerBrokerAccess {
 
             // close connection before of X seconds
             setTimeout(function () {
-                conn.close();
-                resolve({
-                    code: 408,
-                    response: {
-                        message: 'Timeout'
-                    }
-                });
+                if (!isRespond) {
+                    conn.close();
+                    resolve({
+                        code: 408,
+                        response: {
+                            message: 'Timeout'
+                        }
+                    });
+                }
             }, timeout);
             // before X seconds
         })
+    }
+    
+    /**
+     * Convert Message
+     * @param message 
+     * @returns 
+     */
+    messageConvert(message: any): IResponseAccess {
+        const messageResponse: IResponseAccess = {
+            code: 200,
+            response: {
+                message: 'Ok'
+            }
+        };
+        let result = null;
+        try {
+            result = JSON.parse(message.content.toString());
+            messageResponse.code = result.code;
+            messageResponse.response = result.response;
+        } catch (e) {
+            result = message.content.toString();
+            messageResponse.code = 500;
+            messageResponse.response = result;
+        }
+        return messageResponse;
     }
 }

@@ -32,4 +32,10 @@ export interface IMessagerBrokerAccess {
      * @param message 
      */
     sendRPC(message: IMessagerAccess): Promise<IResponseAccess>;
+
+    /**
+     * Message Convert
+     * @param message 
+     */
+    messageConvert(message: any): IResponseAccess;
 }
