@@ -1,22 +1,22 @@
 export interface IMessage {
-    message: any;
     queue: string;
+    message: any;
 }
 
-export interface IResponseMessage {
-    code: number,
-    body: any
+export interface IMessageResponse {
+    code: number;
+    response: any;
 }
 
 export interface IMessagerBroker {
     /**
-     * Send Message RPC
+     * Send RPC
      * @param message 
      */
-    sendRPC(message: IMessage): Promise<IResponseMessage>;
+    sendRPC(message: IMessage): Promise<IMessageResponse>;
 
     /**
-     * Send Message Pub-Sub
+     * Send Pub/Sub
      * @param message 
      */
     sendPubSub(message: IMessage): Promise<void>;

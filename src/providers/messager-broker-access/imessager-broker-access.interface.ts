@@ -1,4 +1,4 @@
-export interface IMessagerBrokerAccessData {
+export interface IMessagerAccess {
     queue: string;
     message: any;
 }
@@ -10,12 +10,6 @@ export interface IMessagerBrokerAccess {
     connect(): Promise<any>;
 
     /**
-     * Send RPC
-     * @param objMessage 
-     */
-    sendRPC(objMessage: IMessagerBrokerAccessData): Promise<any>;
-
-    /**
      * Create Queue
      * @param channel 
      * @param queue 
@@ -24,7 +18,7 @@ export interface IMessagerBrokerAccess {
 
     /**
      * Send Pub/Sub
-     * @param objMessage 
+     * @param message 
      */
-    sendPubSub(objMessage: IMessagerBrokerAccessData): Promise<void>
+    sendPubSub(message: IMessagerAccess): Promise<any>;
 }
