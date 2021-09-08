@@ -1,5 +1,17 @@
-import { RabbitMQ } from "./rabbit-mq/rabbit-mq.provider";
+import { IRouterMessageBroker } from "./implementations/imessager-broker-access.interface";
+import { RabbitMQ } from "./implementations/rabbit-mq/rabbit-mq.provider";
 
-const messagerBrokerAccess = new RabbitMQ();
+const listQueuesListen: Array<IRouterMessageBroker> = [];
 
-export { messagerBrokerAccess };
+const app = {
+    listen: (callback: CallableFunction) => {
+        const messagerBrokerAccess = new RabbitMQ();
+        listQueuesListen.map((queueListeb) => {
+            queueListeb.handle(messagerBrokerAccess);
+        })
+        callback();
+    }
+}
+
+
+export { app };

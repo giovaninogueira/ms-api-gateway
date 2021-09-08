@@ -1,6 +1,6 @@
-import { IMessagerAccess, IMessagerBrokerAccess, IResponseAccess } from "../imessager-broker-access.interface";
 import amqp from "amqplib";
 import { v4 as uuidv4 } from 'uuid';
+import { IMessagerAccess, IMessagerAccessRequest, IMessagerBrokerAccess, IResponseAccessResponse } from "../imessager-broker-access.interface";
 
 export class RabbitMQ implements IMessagerBrokerAccess {
 
@@ -11,6 +11,31 @@ export class RabbitMQ implements IMessagerBrokerAccess {
      */
     async connect(): Promise<any> {
         return amqp.connect(this.url).then(conn => conn.createChannel());
+    }
+
+    /**
+     * Listen RPC
+     * @param queue 
+     * @param callback 
+     */
+    listenRPC(queue: string, callback: CallableFunction) {
+        this.connect()
+            .then(channel => this.createQueue(channel, queue))
+            .then(ch => {
+                ch.consume(queue, async (msg: any) => {
+                    if (msg !== null) {
+                        const request = this.messageConvertRequest(msg);
+                        const response = await callback(request);
+                        await this.responseCallRPC({
+                            queue: queue,
+                            replyTo: msg.properties.replyTo,
+                            correlationId: msg.properties.correlationId,
+                            response: response
+                        })
+                        ch.ack(msg);
+                    }
+                });
+            });
     }
 
     /**
@@ -49,7 +74,7 @@ export class RabbitMQ implements IMessagerBrokerAccess {
      * Send RPC
      * @param message 
      */
-    async sendRPC(message: IMessagerAccess): Promise<IResponseAccess> {
+    async sendRPC(message: IMessagerAccess): Promise<IResponseAccessResponse> {
         const timeout = 5000;
 
         return new Promise(async (resolve, reject) => {
@@ -100,14 +125,14 @@ export class RabbitMQ implements IMessagerBrokerAccess {
             // before X seconds
         })
     }
-    
+
     /**
      * Convert Message
      * @param message 
      * @returns 
      */
-    messageConvert(message: any): IResponseAccess {
-        const messageResponse: IResponseAccess = {
+    messageConvert(message: any): IResponseAccessResponse {
+        const messageResponse: IResponseAccessResponse = {
             code: 200,
             response: {
                 message: 'Ok'
@@ -117,12 +142,58 @@ export class RabbitMQ implements IMessagerBrokerAccess {
         try {
             result = JSON.parse(message.content.toString());
             messageResponse.code = result.code;
-            messageResponse.response = result.response;
+            messageResponse.response = result;
         } catch (e) {
             result = message.content.toString();
             messageResponse.code = 500;
             messageResponse.response = result;
         }
         return messageResponse;
+    }
+
+    /**
+     * Message Convert Request
+     * @param message 
+     * @returns 
+     */
+    messageConvertRequest(message: any): IMessagerAccessRequest {
+        const messageRequest: IMessagerAccessRequest = {
+            body: null,
+            message: ''
+        };
+        let result = null;
+        try {
+            result = JSON.parse(message.content.toString());
+            messageRequest.body = result;
+        } catch (e) {
+            result = message.content.toString();
+            messageRequest.message = result;
+        }
+        return messageRequest;
+    }
+
+    /**
+     * Response RPC
+     * @param replyTo 
+     * @param correlationId 
+     * @param response 
+     * @returns 
+     */
+    async responseCallRPC(objResponse: {
+        queue: string,
+        replyTo: string,
+        correlationId: string,
+        response: IResponseAccessResponse
+    }): Promise<void> {
+        return this.connect()
+            .then(channel => this.createQueue(channel, objResponse.queue))
+            .then(channel => {
+                channel.sendToQueue(
+                    objResponse.replyTo,
+                    Buffer.from(JSON.stringify(objResponse.response)),
+                    { correlationId: objResponse.correlationId }
+                );
+            })
+            .catch(err => console.log(err));
     }
 }

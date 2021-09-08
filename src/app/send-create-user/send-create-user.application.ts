@@ -1,8 +1,8 @@
-import { IMessagerBroker } from "../../repositories/messager-broker/imessager-broker.interface";
+import { IMessagerBrokerAccess } from "../../providers/messager-broker-access/implementations/imessager-broker-access.interface";
 import { ISendCreateUserDTO } from "./isend-create-user-dto.interface";
 
 export class SendCreateUserApplication {
-    constructor (private readonly messagerBroker: IMessagerBroker) { }
+    constructor (private readonly messagerBroker: IMessagerBrokerAccess) { }
 
     /**
      * Handle
