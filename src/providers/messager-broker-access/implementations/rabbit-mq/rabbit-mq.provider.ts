@@ -64,7 +64,7 @@ export class RabbitMQ implements IMessagerBrokerAccess {
             .then(channel =>
                 channel.sendToQueue(
                     message.queue,
-                    Buffer.from(JSON.stringify(message)),
+                    Buffer.from(JSON.stringify(message.message)),
                 ),
             )
             .catch(err => console.log(err));
